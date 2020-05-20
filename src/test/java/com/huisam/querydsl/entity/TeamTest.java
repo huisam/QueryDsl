@@ -82,4 +82,32 @@ class TeamTest {
         /* then */
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
+
+    @Test
+    @DisplayName("and / or Query")
+    void search() {
+        /* given & when */
+        final Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1")
+                        .and(member.age.eq(10))
+                )
+                .fetchOne();
+        /* then */
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    @DisplayName("and / or Query")
+    void search_param() {
+        /* given & when */
+        final Member findMember = queryFactory
+                .selectFrom(member)
+                .where(
+                        member.username.eq("member1"), member.age.eq(10)
+                )
+                .fetchOne();
+        /* then */
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
 }
