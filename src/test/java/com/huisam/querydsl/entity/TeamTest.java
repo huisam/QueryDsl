@@ -1,5 +1,6 @@
 package com.huisam.querydsl.entity;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -109,5 +110,36 @@ class TeamTest {
                 .fetchOne();
         /* then */
         assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    @DisplayName("result fetch 테스트")
+    void result_fetch() {
+        // 리스트 조회
+        final List<Member> fetch = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        // 단 한건 조회, 결과가 둘 이상이면 NonUniqueException
+        final Member fetchOne = queryFactory
+                .selectFrom(member)
+                .fetchOne();
+
+        final Member fetchFirst = queryFactory
+                .selectFrom(member)
+                .fetchFirst();
+
+        // 페이징 쿼리
+        final QueryResults<Member> queryResults = queryFactory
+                .selectFrom(member)
+                .fetchResults();
+
+        queryResults.getTotal();
+        final List<Member> results = queryResults.getResults();
+
+        // count로 쿼리 작성해서 조회
+        final long total = queryFactory
+                .selectFrom(member)
+                .fetchCount();
     }
 }
