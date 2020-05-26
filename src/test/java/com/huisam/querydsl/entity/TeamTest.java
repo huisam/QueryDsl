@@ -142,4 +142,29 @@ class TeamTest {
                 .selectFrom(member)
                 .fetchCount();
     }
+
+    @Test
+    @DisplayName("1.회원 나이 내림차순 2.회원 이름 올림차순 3. 회원 없으면 null")
+    void sort() {
+        /* given */
+        em.persist(new Member(null, 100));
+        em.persist(new Member("member5", 100));
+        em.persist(new Member("member6", 100));
+
+        /* when */
+        final List<Member> fetch = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(100))
+                .orderBy(member.age.desc(), member.username.asc().nullsLast())
+                .fetch();
+
+        Member result5 = fetch.get(0);
+        Member result6 = fetch.get(1);
+        Member memberNull = fetch.get(2);
+
+        /* then */
+        assertThat(result5.getUsername()).isEqualTo("member5");
+        assertThat(result6.getUsername()).isEqualTo("member6");
+        assertThat(memberNull.getUsername()).isNull();
+    }
 }
