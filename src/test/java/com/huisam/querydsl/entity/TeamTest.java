@@ -167,4 +167,39 @@ class TeamTest {
         assertThat(result6.getUsername()).isEqualTo("member6");
         assertThat(memberNull.getUsername()).isNull();
     }
+
+    @Test
+    @DisplayName("페이징 테스트")
+    void paging1() {
+        /* given */
+        final List<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetch();
+        /* when */
+
+        /* then */
+        assertThat(result.size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("페이징 테스트2")
+    void paging2() {
+        /* given */
+        final QueryResults<Member> queryResult = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetchResults();
+        /* when */
+
+        /* then */
+        assertThat(queryResult.getTotal()).isEqualTo(4);
+        assertThat(queryResult.getLimit()).isEqualTo(2);
+        assertThat(queryResult.getOffset()).isEqualTo(1);
+        assertThat(queryResult.getResults().size()).isEqualTo(2);
+    }
 }
