@@ -1,6 +1,7 @@
 package com.huisam.querydsl.entity;
 
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 import static com.huisam.querydsl.entity.QMember.member;
+import static com.huisam.querydsl.entity.QTeam.team;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -29,7 +31,7 @@ class TeamTest {
         /* given */
         queryFactory = new JPAQueryFactory(em);
         Team teamA = new Team("teamA");
-        Team teamB = new Team("teamA");
+        Team teamB = new Team("teamB");
         em.persist(teamA);
         em.persist(teamB);
 
@@ -202,4 +204,51 @@ class TeamTest {
         assertThat(queryResult.getOffset()).isEqualTo(1);
         assertThat(queryResult.getResults().size()).isEqualTo(2);
     }
+
+    @Test
+    @DisplayName("집합기능 테스트")
+    void aggregation() {
+        /* given & when */
+        final List<Tuple> tuples = queryFactory
+                .select(
+                        member.count(),
+                        member.age.sum(),
+                        member.age.avg(),
+                        member.age.max(),
+                        member.age.min()
+                )
+                .from(member)
+                .fetch();
+
+        /* then */
+        final Tuple tuple = tuples.get(0);
+        assertThat(tuple.get(member.count())).isEqualTo(4);
+        assertThat(tuple.get(member.age.sum())).isEqualTo(100);
+        assertThat(tuple.get(member.age.avg())).isEqualTo(25);
+        assertThat(tuple.get(member.age.min())).isEqualTo(10);
+        assertThat(tuple.get(member.age.max())).isEqualTo(40);
+    }
+
+    @Test
+    @DisplayName("팀의 이름과 각 팀의 평균 연령을 구해라")
+    void group() {
+        /* given */
+        final List<Tuple> tuples = queryFactory
+                .select(team.name, member.age.avg())
+                .from(member)
+                .join(member.team, team)
+                .groupBy(team.name)
+                .fetch();
+        /* when */
+        final Tuple resultA = tuples.get(0);
+        final Tuple resultB = tuples.get(1);
+
+        /* then */
+        assertThat(resultA.get(team.name)).isEqualTo("teamA");
+        assertThat(resultA.get(member.age.avg())).isEqualTo(15);
+
+        assertThat(resultB.get(team.name)).isEqualTo("teamB");
+        assertThat(resultB.get(member.age.avg())).isEqualTo(35);
+    }
+
 }
