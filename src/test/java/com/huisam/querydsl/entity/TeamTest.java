@@ -83,6 +83,7 @@ class TeamTest {
                 .where(member.username.eq("member1"))
                 .fetchOne();
         /* then */
+        assertThat(findMember).isNotNull();
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 
@@ -97,6 +98,7 @@ class TeamTest {
                 )
                 .fetchOne();
         /* then */
+        assertThat(findMember).isNotNull();
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 
@@ -111,6 +113,7 @@ class TeamTest {
                 )
                 .fetchOne();
         /* then */
+        assertThat(findMember).isNotNull();
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 
@@ -136,7 +139,6 @@ class TeamTest {
                 .selectFrom(member)
                 .fetchResults();
 
-        queryResults.getTotal();
         final List<Member> results = queryResults.getResults();
 
         // count로 쿼리 작성해서 조회
@@ -249,6 +251,20 @@ class TeamTest {
 
         assertThat(resultB.get(team.name)).isEqualTo("teamB");
         assertThat(resultB.get(member.age.avg())).isEqualTo(35);
+    }
+
+    @Test
+    @DisplayName("팀A에 소속된 모든 회원")
+    void join_test() {
+        final List<Member> result = queryFactory
+                .selectFrom(member)
+                .join(member.team, team)
+                .where(team.name.eq("teamA"))
+                .fetch();
+
+        assertThat(result)
+                .extracting("username")
+                .containsExactly("member1", "member2");
     }
 
 }
