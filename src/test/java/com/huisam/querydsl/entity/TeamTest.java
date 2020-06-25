@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -281,4 +283,37 @@ class TeamTest {
         }
     }
 
+    @PersistenceUnit
+    EntityManagerFactory emf;
+
+    @Test
+    @DisplayName("fetch join")
+    void fetchJoinNo() {
+        em.flush();
+        em.clear();
+
+        final Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        final boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("패치조인 미적용").isFalse();
+    }
+
+    @Test
+    @DisplayName("fetch join Use")
+    void fetchJoinUse() {
+        em.flush();
+        em.clear();
+
+        final Member findMember = queryFactory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        final boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("패치조인 적용").isTrue();
+    }
 }
