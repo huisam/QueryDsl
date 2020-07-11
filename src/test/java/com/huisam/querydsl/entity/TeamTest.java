@@ -3,6 +3,7 @@ package com.huisam.querydsl.entity;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -415,6 +416,30 @@ class TeamTest {
                 .from(member)
                 .fetch();
         for (String s : result2) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    @DisplayName("상수 문자 처리")
+    void testConstant() {
+        final List<Tuple> result = queryFactory
+                .select(member.username, Expressions.constant("A"))
+                .from(member)
+                .fetch();
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
+
+    @Test
+    @DisplayName("concat 문자 처리")
+    void test_concat() {
+        final List<String> result = queryFactory
+                .select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .fetch();
+        for (String s : result) {
             System.out.println("s = " + s);
         }
     }
