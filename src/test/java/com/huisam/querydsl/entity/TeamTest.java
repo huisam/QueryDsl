@@ -1,9 +1,14 @@
 package com.huisam.querydsl.entity;
 
+import com.huisam.querydsl.dto.MemberDto;
+import com.huisam.querydsl.dto.UserDto;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -472,4 +477,81 @@ class TeamTest {
             System.out.println("age = " + age);
         }
     }
+
+    @Test
+    @DisplayName("dto 조회하기")
+    void testDTO_JPQL() {
+        final List<MemberDto> result = em.createQuery("select new com.huisam.querydsl.dto.MemberDto(m.username, m.age) from Member m", MemberDto.class)
+                .getResultList();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    @DisplayName("dto queryDSL조회하기")
+    void testDTO_Query_DSL() {
+        final List<MemberDto> result = queryFactory
+                .select(Projections.bean(MemberDto.class, member.username, member.age))
+                .from(member)
+                .fetch();
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    @DisplayName("dto queryDSL조회하기")
+    void testDTO_Query_DSL_By_field() {
+        final List<MemberDto> result = queryFactory
+                .select(Projections.fields(MemberDto.class, member.username, member.age))
+                .from(member)
+                .fetch();
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    @DisplayName("dto queryDSL조회하기")
+    void testDTO_Query_DSL_By_constructor() {
+        final List<MemberDto> result = queryFactory
+                .select(Projections.constructor(MemberDto.class, member.username, member.age))
+                .from(member)
+                .fetch();
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    @DisplayName("dto queryDSL조회하기")
+    void testUserDTO_Query_DSL_By_other_DTO() {
+        final List<UserDto> result = queryFactory
+                .select(Projections.fields(UserDto.class, member.username.as("name"), member.age))
+                .from(member)
+                .fetch();
+        for (UserDto userDto : result) {
+            System.out.println("memberDto = " + userDto);
+        }
+    }
+
+    @Test
+    @DisplayName("dto queryDSL조회하기")
+    void testUserDTO_Query_DSL_By_sub_query() {
+        final QMember memberSub = new QMember("memberSub");
+        final List<UserDto> result = queryFactory
+                .select(Projections.fields(UserDto.class, member.username.as("name"),
+                        ExpressionUtils.as(JPAExpressions.select(memberSub.age.max()).from(memberSub), "age"))
+                )
+                .from(member)
+                .fetch();
+
+        for (UserDto userDto : result) {
+            System.out.println("memberDto = " + userDto);
+        }
+    }
+
+
 }
