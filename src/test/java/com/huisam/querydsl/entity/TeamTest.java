@@ -443,4 +443,33 @@ class TeamTest {
             System.out.println("s = " + s);
         }
     }
+
+    @Test
+    @DisplayName("프로젝션 테스트")
+    void simpleProjection() {
+        final List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    @DisplayName("tuple 테스트")
+    void tupleProjection() {
+        final List<Tuple> result = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : result) {
+            final String userName = tuple.get(member.username);
+            final Integer age = tuple.get(member.age);
+            System.out.println("userName = " + userName);
+            System.out.println("age = " + age);
+        }
+    }
 }
