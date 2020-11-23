@@ -1,6 +1,7 @@
 package com.huisam.querydsl.entity;
 
 import com.huisam.querydsl.dto.MemberDto;
+import com.huisam.querydsl.dto.QMemberDto;
 import com.huisam.querydsl.dto.UserDto;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
@@ -554,4 +555,17 @@ class TeamTest {
     }
 
 
+    @Test
+    @DisplayName("query Injection")
+    void test_query_injection() {
+        /* given */
+        final List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
 }
