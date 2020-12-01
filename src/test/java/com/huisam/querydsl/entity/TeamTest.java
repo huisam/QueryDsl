@@ -635,4 +635,79 @@ class TeamTest {
     private BooleanExpression ageEq(Integer ageCond) {
         return ageCond != null ? member.age.eq(ageCond) : null;
     }
+
+    @Test
+    @DisplayName("벌크 업데이트")
+    void bulk_Update() {
+        final long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        // 영속성 컨텍스트 초기화
+        em.flush();
+        em.clear();
+
+        final List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        // 영속성 컨텍스트 때문에 예전 update 전 자료들이 저장되어 있음
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    @Test
+    @DisplayName("bulk Add 테스트")
+    void bulkAdd() {
+        final long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+
+    }
+
+    @Test
+    @DisplayName("bulk delete 테스트")
+    void test_bulkDelete() {
+        final long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+
+    }
+
+    @Test
+    @DisplayName("sql function 호출하기")
+    void test_sql_Function() {
+        final List<String> result = queryFactory
+                .select(Expressions.stringTemplate("function('replace', {0}, {1}, {2})",
+                        member.username, "member", "M"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    @DisplayName("sql function 호출하기2")
+    void test_sql_Function2() {
+        final List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .where(member.username.eq(
+                        Expressions.stringTemplate("function('lower', {0})", member.username))
+                )
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+
 }
